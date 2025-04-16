@@ -78,7 +78,7 @@ print("Local Outlier Factor Anomalies:", df["LOF_Anomaly"].sum())
 
 # GRAPHS
 
-# ---------- 1. Scatter Plot for Anomalies ----------
+# ---------- 1. Scatter Plot: Isolation Forest Anomalies ----------
 plt.figure(figsize=(10, 6))
 
 sns.scatterplot(x=df["ForkVA"], y=df["ForkW"], label="Normal", color="blue")
@@ -90,8 +90,7 @@ plt.xlabel("VA (Apparent Power)")
 plt.ylabel("kW (Real Power)")
 plt.title("Fault Detection Using Isolation Forest (Scatter Plot)")
 plt.legend()
-
-plt.show(block=False)  
+plt.show(block=False)
 
 # ---------- 2. Box Plot for Outliers ----------
 plt.figure(figsize=(12, 5))
@@ -106,4 +105,28 @@ plt.subplot(1, 2, 2)
 sns.boxplot(y=df["ForkW"])
 plt.title("ForkW (Real Power) Distribution")
 
+plt.show()
+
+# ---------- 3. Overlap Visualization ----------
+# Classify anomalies
+df["Anomaly_Label"] = "Normal"
+df.loc[df["IsoForest_Anomaly"] & ~df["LOF_Anomaly"], "Anomaly_Label"] = "Isolation Forest Only"
+df.loc[~df["IsoForest_Anomaly"] & df["LOF_Anomaly"], "Anomaly_Label"] = "LOF Only"
+df.loc[df["IsoForest_Anomaly"] & df["LOF_Anomaly"], "Anomaly_Label"] = "Both"
+
+# Set colors for categories
+palette = {
+    "Normal": "lightgrey",
+    "Isolation Forest Only": "red",
+    "LOF Only": "blue",
+    "Both": "purple"
+}
+
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x="ForkVA", y="ForkW", hue="Anomaly_Label", palette=palette)
+
+plt.title("Anomaly Detection Overlap: Isolation Forest vs LOF")
+plt.xlabel("VA (Apparent Power)")
+plt.ylabel("kW (Real Power)")
+plt.legend()
 plt.show()
